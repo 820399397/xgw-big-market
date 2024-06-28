@@ -1,0 +1,5 @@
+spring:
+  config:
+    name: xgw-big-market-app
+  profiles:
+    active: dev

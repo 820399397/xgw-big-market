@@ -1,0 +1,1 @@
+docker stop xgw-big-market
