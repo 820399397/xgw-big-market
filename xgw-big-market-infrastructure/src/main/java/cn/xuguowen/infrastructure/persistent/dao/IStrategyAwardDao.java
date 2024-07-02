@@ -2,6 +2,7 @@ package cn.xuguowen.infrastructure.persistent.dao;
 
 import cn.xuguowen.infrastructure.persistent.po.StrategyAward;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -18,4 +19,13 @@ import java.util.List;
 public interface IStrategyAwardDao {
 
     List<StrategyAward> queryStrategyAwardList();
+
+    /**
+     * 根据抽奖策略ID查询属于当前抽奖策略的奖品列表信息
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    List<StrategyAward> queryStrategyAwardListByStrategyId(@Param("strategyId") Long strategyId);
+
+
 }
