@@ -35,6 +35,7 @@ public class StrategyRepository implements IStrategyRepository {
 
     /**
      * 根据抽奖策略ID查询当前抽奖策略下的所有奖品信息
+     *
      * @param strategyId 抽奖策略ID
      * @return
      */
@@ -52,12 +53,12 @@ public class StrategyRepository implements IStrategyRepository {
         strategyAwardEntityList = new ArrayList<>(strategyAwardList.size());
         for (StrategyAward strategyAward : strategyAwardList) {
             StrategyAwardEntity strategyAwardEntity = StrategyAwardEntity.builder()
-                        .strategyId(strategyAward.getStrategyId())
-                        .awardId(strategyAward.getAwardId())
-                        .awardCount(strategyAward.getAwardCount())
-                        .awardCountSurplus(strategyAward.getAwardCountSurplus())
-                        .awardRate(strategyAward.getAwardRate())
-                        .build();
+                    .strategyId(strategyAward.getStrategyId())
+                    .awardId(strategyAward.getAwardId())
+                    .awardCount(strategyAward.getAwardCount())
+                    .awardCountSurplus(strategyAward.getAwardCountSurplus())
+                    .awardRate(strategyAward.getAwardRate())
+                    .build();
             strategyAwardEntityList.add(strategyAwardEntity);
         }
 
@@ -70,9 +71,10 @@ public class StrategyRepository implements IStrategyRepository {
 
     /**
      * 将概率查找表存入到redis中
-     * @param strategyId 抽奖策略ID
-     * @param rateRange  抽奖概率范围
-     * @param shuffleStrategyAwardSearchRateTable   概率范围查找表
+     *
+     * @param strategyId                          抽奖策略ID
+     * @param rateRange                           抽奖概率范围
+     * @param shuffleStrategyAwardSearchRateTable 概率范围查找表
      */
     @Override
     public void storeStrategyAwardSearchRateTable(Long strategyId, BigDecimal rateRange, Map<Integer, Long> shuffleStrategyAwardSearchRateTable) {
@@ -85,7 +87,8 @@ public class StrategyRepository implements IStrategyRepository {
 
     /**
      * 根据抽奖策略ID查询缓存获取抽奖概率范围值
-     * @param strategyId    抽奖策略ID
+     *
+     * @param strategyId 抽奖策略ID
      * @return
      */
     @Override
@@ -95,12 +98,51 @@ public class StrategyRepository implements IStrategyRepository {
 
     /**
      * 根据抽奖策略ID和概率范围值获取查找表中的某个奖品
-     * @param strategyId    抽奖策略ID
-     * @param random        随机数
+     *
+     * @param strategyId 抽奖策略ID
+     * @param random     随机数
      * @return
      */
     @Override
     public Long getStrategyAwardAssemble(Long strategyId, int random) {
         return redisService.getFromMap(Constants.RedisKey.STRATEGY_RATE_TABLE_KEY + strategyId, random);
+    }
+
+    /**
+     * 将累加概率范围存入redis中
+     *
+     * @param strategyId             抽奖策略ID
+     * @param awardCumulativeRateMap 累加概率范围Map
+     * @param totalAwardRate         总中奖概率
+     */
+    @Override
+    public void storeCumulativeRateMap(Long strategyId, BigDecimal totalAwardRate, Map<Long, BigDecimal> awardCumulativeRateMap) {
+        // 1. 存储总中奖概率
+        redisService.setValue(Constants.RedisKey.STRATEGY_TOTAL_AWARD_KEY + strategyId, totalAwardRate);
+        // 2. 存储每个奖品的概率值
+        Map<Long, BigDecimal> cacheRateTable = redisService.getMap(Constants.RedisKey.STRATEGY_CUMULATIVE_RATE_MAP_KEY + strategyId);
+        cacheRateTable.putAll(awardCumulativeRateMap);
+    }
+
+    /**
+     * 获取累加概率范围Map
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    @Override
+    public Map<Long, BigDecimal> getCumulativeRateMap(Long strategyId) {
+        return redisService.getMap(Constants.RedisKey.STRATEGY_CUMULATIVE_RATE_MAP_KEY + strategyId);
+    }
+
+    /**
+     * 获取总概率值
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    @Override
+    public BigDecimal getTotalAwardRate(Long strategyId) {
+        return redisService.getValue(Constants.RedisKey.STRATEGY_TOTAL_AWARD_KEY + strategyId);
     }
 }

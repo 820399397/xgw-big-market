@@ -12,16 +12,33 @@ package cn.xuguowen.domain.strategy.service.armory;
 public interface IStrategyArmory {
 
     /**
-     * 装配抽奖策略
+     * 装配抽奖策略：空间换时间
+     *
      * @param strategyId 抽奖策略ID
      */
     void assembleLotteryStrategy(Long strategyId);
 
     /**
+     * 装配抽奖策略的另一种实现方式：时间换空间
+     *
+     * @param strategyId 抽奖策略ID
+     */
+    void assemblyLotteryStrategyAlternative(Long strategyId);
+
+    /**
      * 根据抽奖策略ID获取奖品
-     * @param strategyId
+     *
+     * @param strategyId 抽奖策略ID
      * @return
      */
     Long getRandomArard(Long strategyId);
+
+    /**
+     * 针对于累加概率范围的抽奖
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    Long getRandomAwardAlternative(Long strategyId);
 
 }

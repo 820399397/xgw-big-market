@@ -32,8 +32,22 @@ public class StrategyArmoryTest {
 
     @Test
     public void test_getRandomArard() {
-        log.info("测试结果-{}-奖品ID值",strategyArmory.getRandomArard(100002L));
-        log.info("测试结果-{}-奖品ID值",strategyArmory.getRandomArard(100002L));
-        log.info("测试结果-{}-奖品ID值",strategyArmory.getRandomArard(100002L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomArard(100002L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomArard(100002L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomArard(100002L));
+    }
+
+    @Test
+    public void test_assemblyLotteryStrategyAlternative() {
+        strategyArmory.assemblyLotteryStrategyAlternative(100003L);
+    }
+
+    @Test
+    public void test_getRandomAwardAlternative() {
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomAwardAlternative(100003L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomAwardAlternative(100003L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomAwardAlternative(100003L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomAwardAlternative(100003L));
+        log.info("测试结果-{}-奖品ID值", strategyArmory.getRandomAwardAlternative(100003L));
     }
 }

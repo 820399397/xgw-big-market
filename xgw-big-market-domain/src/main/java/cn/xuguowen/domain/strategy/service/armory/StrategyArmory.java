@@ -24,7 +24,7 @@ import java.util.*;
  */
 @Service
 @Slf4j
-public class StrategyArmory implements IStrategyArmory{
+public class StrategyArmory implements IStrategyArmory {
 
     @Resource
     private IStrategyRepository strategyRepository;
@@ -32,6 +32,8 @@ public class StrategyArmory implements IStrategyArmory{
 
     /**
      * 装配抽奖策略
+     * 空间换时间策略：通过预生成的查找表快速查找中奖结果，适合总概率值不大的情况，因为存储查找表所需空间较小。
+     *
      * @param strategyId 抽奖策略ID
      */
     @Override
@@ -70,7 +72,7 @@ public class StrategyArmory implements IStrategyArmory{
                 strategyAwardSearchRateTables.add(awardId);
             }
         }
-        log.info("size:{},strategyAwardSearchRateTables:{}", strategyAwardSearchRateTables.size(),JSON.toJSONString(strategyAwardSearchRateTables));
+        log.info("size:{},strategyAwardSearchRateTables:{}", strategyAwardSearchRateTables.size(), JSON.toJSONString(strategyAwardSearchRateTables));
 
         // 5.对存储的奖品进行乱序操作
         Collections.shuffle(strategyAwardSearchRateTables);
@@ -81,19 +83,86 @@ public class StrategyArmory implements IStrategyArmory{
         for (int i = 0; i < strategyAwardSearchRateTables.size(); i++) {
             shuffleStrategyAwardSearchRateTable.put(i, strategyAwardSearchRateTables.get(i));
         }
-        log.info("shuffleStrategyAwardSearchRateTable:{}",JSON.toJSONString(shuffleStrategyAwardSearchRateTable));
+        log.info("shuffleStrategyAwardSearchRateTable:{}", JSON.toJSONString(shuffleStrategyAwardSearchRateTable));
 
         // 7.存入redis中
-        strategyRepository.storeStrategyAwardSearchRateTable(strategyId,new BigDecimal(shuffleStrategyAwardSearchRateTable.size()),shuffleStrategyAwardSearchRateTable);
+        strategyRepository.storeStrategyAwardSearchRateTable(strategyId, new BigDecimal(shuffleStrategyAwardSearchRateTable.size()), shuffleStrategyAwardSearchRateTable);
 
     }
 
     @Override
     public Long getRandomArard(Long strategyId) {
         Integer rateRange = strategyRepository.getRateRange(strategyId);
-        log.info("rateRange:{}",rateRange);
+        log.info("rateRange:{}", rateRange);
         int random = new SecureRandom().nextInt(rateRange);
-        log.info("random:{}",random);
-        return strategyRepository.getStrategyAwardAssemble(strategyId,random);
+        log.info("random:{}", random);
+        return strategyRepository.getStrategyAwardAssemble(strategyId, random);
+    }
+
+    /**
+     * 装配抽奖策略的另一种实现方式：时间换空间
+     * 时间换空间策略：在抽奖时通过计算随机值与概率范围进行对比，适合总概率值很大的情况，因为存储查找表所需空间太大。
+     *
+     * @param strategyId 抽奖策略ID
+     */
+    @Override
+    public void assemblyLotteryStrategyAlternative(Long strategyId) {
+        // 1.根据抽奖策略ID查询当前抽奖策略下的所有奖品信息
+        List<StrategyAwardEntity> strategyAwardEntityList = strategyRepository.queryStrategyAwardList(strategyId);
+        log.info("策略装配库-装配抽奖策略-查询到奖品信息:{}", JSON.toJSONString(strategyAwardEntityList));
+        if (CollectionUtils.isEmpty(strategyAwardEntityList)) {
+            return;
+        }
+
+        // 2.获取总概率值
+        BigDecimal totalAwardRate = BigDecimal.ZERO;
+        for (StrategyAwardEntity strategyAwardEntity : strategyAwardEntityList) {
+            totalAwardRate = totalAwardRate.add(strategyAwardEntity.getAwardRate());
+        }
+        log.info("totalAwardRate:{}", totalAwardRate);
+
+        // 3.计算每个奖品的概率值
+        BigDecimal cumulativeRate = BigDecimal.ZERO;
+        Map<Long, BigDecimal> awardCumulativeRateMap = new LinkedHashMap<>();
+        for (StrategyAwardEntity strategyAwardEntity : strategyAwardEntityList) {
+            cumulativeRate = cumulativeRate.add(strategyAwardEntity.getAwardRate());
+            awardCumulativeRateMap.put(strategyAwardEntity.getAwardId(), cumulativeRate);
+        }
+        log.info("awardCumulativeRateMap:{}", JSON.toJSONString(awardCumulativeRateMap));
+
+        // 4. 存入redis中
+        strategyRepository.storeCumulativeRateMap(strategyId, totalAwardRate, awardCumulativeRateMap);
+    }
+
+
+    /**
+     * 针对于累加概率范围的抽奖
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    public Long getRandomAwardAlternative(Long strategyId) {
+        // 1.获取总概率值
+        BigDecimal totalAwardRate = strategyRepository.getTotalAwardRate(strategyId);
+
+        // 2.获取每个奖品的概率值
+        Map<Long, BigDecimal> awardCumulativeRateMap = strategyRepository.getCumulativeRateMap(strategyId);
+        log.info("awardCumulativeRateMap:{}", JSON.toJSONString(awardCumulativeRateMap));
+        if (awardCumulativeRateMap == null) {
+            throw new IllegalArgumentException("Invalid strategyId: " + strategyId);
+        }
+
+
+        // 3.生成随机概率
+        BigDecimal randomRate = totalAwardRate.multiply(BigDecimal.valueOf(new SecureRandom().nextDouble()));
+        log.info("randomRate:{}", randomRate);
+
+        // 4.根据随机概率匹配奖品
+        for (Map.Entry<Long, BigDecimal> entry : awardCumulativeRateMap.entrySet()) {
+            if (randomRate.compareTo(entry.getValue()) <= 0) {
+                return entry.getKey();
+            }
+        }
+        return null; // 如果没有匹配上，返回null
     }
 }
