@@ -13,8 +13,15 @@
 
     <select id="queryStrategyList" resultMap="dataMap">
         SELECT strategy_id
-        FROM strategy
-        LIMIT 10
+        FROM strategy LIMIT 10
+    </select>
+
+    <select id="queryStrategyEntityByStrategyId"
+            parameterType="long"
+            resultMap="dataMap">
+        select strategy_id, strategy_desc, rule_models
+        from strategy
+        where strategy_id = #{strategyId}
     </select>
 
 </mapper>

@@ -1,9 +1,15 @@
 package cn.xuguowen.infrastructure.persistent.repository;
 
 import cn.xuguowen.domain.strategy.model.entity.StrategyAwardEntity;
+import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
+import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
 import cn.xuguowen.infrastructure.persistent.dao.IStrategyAwardDao;
+import cn.xuguowen.infrastructure.persistent.dao.IStrategyDao;
+import cn.xuguowen.infrastructure.persistent.dao.IStrategyRuleDao;
+import cn.xuguowen.infrastructure.persistent.po.Strategy;
 import cn.xuguowen.infrastructure.persistent.po.StrategyAward;
+import cn.xuguowen.infrastructure.persistent.po.StrategyRule;
 import cn.xuguowen.infrastructure.persistent.redis.IRedisService;
 import cn.xuguowen.types.common.Constants;
 import org.springframework.stereotype.Repository;
@@ -14,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ClassName: StrategyRepository
@@ -32,6 +39,12 @@ public class StrategyRepository implements IStrategyRepository {
 
     @Resource
     private IStrategyAwardDao strategyAwardDao;
+
+    @Resource
+    private IStrategyDao strategyDao;
+
+    @Resource
+    private IStrategyRuleDao strategyRuleDao;
 
     /**
      * 根据抽奖策略ID查询当前抽奖策略下的所有奖品信息
@@ -72,16 +85,16 @@ public class StrategyRepository implements IStrategyRepository {
     /**
      * 将概率查找表存入到redis中
      *
-     * @param strategyId                          抽奖策略ID
+     * @param key                                 redis key
      * @param rateRange                           抽奖概率范围
      * @param shuffleStrategyAwardSearchRateTable 概率范围查找表
      */
     @Override
-    public void storeStrategyAwardSearchRateTable(Long strategyId, BigDecimal rateRange, Map<Integer, Long> shuffleStrategyAwardSearchRateTable) {
+    public void storeStrategyAwardSearchRateTable(String key, BigDecimal rateRange, Map<Integer, Long> shuffleStrategyAwardSearchRateTable) {
         // 1. 存储抽奖策略范围值
-        redisService.setValue(Constants.RedisKey.STRATEGY_RATE_RANGE_KEY + strategyId, rateRange.intValue());
+        redisService.setValue(Constants.RedisKey.STRATEGY_RATE_RANGE_KEY + key, rateRange.intValue());
         // 2. 存储概率查找表
-        Map<Integer, Long> cacheRateTable = redisService.getMap(Constants.RedisKey.STRATEGY_RATE_TABLE_KEY + strategyId);
+        Map<Integer, Long> cacheRateTable = redisService.getMap(Constants.RedisKey.STRATEGY_RATE_TABLE_KEY + key);
         cacheRateTable.putAll(shuffleStrategyAwardSearchRateTable);
     }
 
@@ -93,19 +106,24 @@ public class StrategyRepository implements IStrategyRepository {
      */
     @Override
     public Integer getRateRange(Long strategyId) {
-        return redisService.getValue(Constants.RedisKey.STRATEGY_RATE_RANGE_KEY + strategyId);
+        return this.getRateRange(String.valueOf(strategyId));
+    }
+
+    @Override
+    public Integer getRateRange(String key) {
+        return redisService.getValue(Constants.RedisKey.STRATEGY_RATE_RANGE_KEY + key);
     }
 
     /**
      * 根据抽奖策略ID和概率范围值获取查找表中的某个奖品
      *
-     * @param strategyId 抽奖策略ID
-     * @param random     随机数
+     * @param key    抽奖策略ID
+     * @param random 随机数
      * @return
      */
     @Override
-    public Long getStrategyAwardAssemble(Long strategyId, int random) {
-        return redisService.getFromMap(Constants.RedisKey.STRATEGY_RATE_TABLE_KEY + strategyId, random);
+    public Long getStrategyAwardAssemble(String key, int random) {
+        return redisService.getFromMap(Constants.RedisKey.STRATEGY_RATE_TABLE_KEY + key, random);
     }
 
     /**
@@ -144,5 +162,57 @@ public class StrategyRepository implements IStrategyRepository {
     @Override
     public BigDecimal getTotalAwardRate(Long strategyId) {
         return redisService.getValue(Constants.RedisKey.STRATEGY_TOTAL_AWARD_KEY + strategyId);
+    }
+
+    /**
+     * 根据策略ID查询抽奖策略信息
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    @Override
+    public StrategyEntity queryStrategyEntityByStrategyId(Long strategyId) {
+        // 1.先从缓存中获取
+        String cacheKey = Constants.RedisKey.STRATEGY_KEY + strategyId;
+        StrategyEntity strategyEntity = redisService.getValue(cacheKey);
+        if (Objects.nonNull(strategyEntity)) return strategyEntity;
+
+        // 2.从数据库查询
+        Strategy strategy = strategyDao.queryStrategyEntityByStrategyId(strategyId);
+        strategyEntity = StrategyEntity.builder()
+                .strategyId(strategy.getStrategyId())
+                .strategyDesc(strategy.getStrategyDesc())
+                .ruleModels(strategy.getRuleModels())
+                .build();
+
+        // 3.存入缓存
+        redisService.setValue(cacheKey, strategyEntity);
+
+        // 4.返回结果
+        return strategyEntity;
+    }
+
+    /**
+     * 查询抽奖策略规则
+     *
+     * @param strategyId 抽奖策略ID
+     * @param ruleModel  抽奖策略权重
+     * @return
+     */
+    @Override
+    public StrategyRuleEntity queryStrategyRule(Long strategyId, String ruleModel) {
+        StrategyRule strategyRule = new StrategyRule();
+        strategyRule.setStrategyId(strategyId);
+        strategyRule.setRuleModel(ruleModel);
+        StrategyRule strategyRuleDB = strategyRuleDao.queryStrategyRule(strategyRule);
+
+        return StrategyRuleEntity.builder()
+                .strategyId(strategyRuleDB.getStrategyId())
+                .awardId(strategyRuleDB.getAwardId())
+                .ruleType(strategyRuleDB.getRuleType())
+                .ruleModel(strategyRuleDB.getRuleModel())
+                .ruleValue(strategyRuleDB.getRuleValue())
+                .ruleDesc(strategyRuleDB.getRuleDesc())
+                .build();
     }
 }

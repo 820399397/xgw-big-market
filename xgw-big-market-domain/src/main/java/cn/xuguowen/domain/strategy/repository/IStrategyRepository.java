@@ -1,6 +1,8 @@
 package cn.xuguowen.domain.strategy.repository;
 
 import cn.xuguowen.domain.strategy.model.entity.StrategyAwardEntity;
+import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
+import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,11 +29,11 @@ public interface IStrategyRepository {
     /**
      * 将概率查找表存入到redis中
      *
-     * @param strategyId                          抽奖策略ID
+     * @param key                                 redis key
      * @param rateRange                           抽奖概率范围
      * @param shuffleStrategyAwardSearchRateTable 概率范围查找表
      */
-    void storeStrategyAwardSearchRateTable(Long strategyId, BigDecimal rateRange, Map<Integer, Long> shuffleStrategyAwardSearchRateTable);
+    void storeStrategyAwardSearchRateTable(String key, BigDecimal rateRange, Map<Integer, Long> shuffleStrategyAwardSearchRateTable);
 
     /**
      * 根据抽奖策略ID查询缓存获取抽奖概率范围值
@@ -42,13 +44,22 @@ public interface IStrategyRepository {
     Integer getRateRange(Long strategyId);
 
     /**
-     * 根据抽奖策略ID和概率范围值获取查找表中的某个奖品
+     * 根据抽奖策略ID查询缓存获取抽奖概率范围值
+     * 适合于普通抽奖和权重抽奖
      *
-     * @param strategyId 抽奖策略ID
-     * @param random     随机数
+     * @param key
      * @return
      */
-    Long getStrategyAwardAssemble(Long strategyId, int random);
+    Integer getRateRange(String key);
+
+    /**
+     * 根据抽奖策略ID和概率范围值获取查找表中的某个奖品
+     *
+     * @param key    redis key
+     * @param random 随机数
+     * @return
+     */
+    Long getStrategyAwardAssemble(String key, int random);
 
     /**
      * 将累加概率范围存入redis中
@@ -74,4 +85,21 @@ public interface IStrategyRepository {
      * @return
      */
     BigDecimal getTotalAwardRate(Long strategyId);
+
+    /**
+     * 根据策略ID查询抽奖策略信息
+     *
+     * @param strategyId 抽奖策略ID
+     * @return
+     */
+    StrategyEntity queryStrategyEntityByStrategyId(Long strategyId);
+
+    /**
+     * 查询抽奖策略规则
+     *
+     * @param strategyId 抽奖策略ID
+     * @param ruleModel  抽奖策略权重
+     * @return
+     */
+    StrategyRuleEntity queryStrategyRule(Long strategyId, String ruleModel);
 }

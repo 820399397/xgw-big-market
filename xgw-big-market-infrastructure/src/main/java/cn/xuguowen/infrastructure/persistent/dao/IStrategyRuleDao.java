@@ -1,7 +1,9 @@
 package cn.xuguowen.infrastructure.persistent.dao;
 
+import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
 import cn.xuguowen.infrastructure.persistent.po.StrategyRule;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -18,4 +20,11 @@ import java.util.List;
 public interface IStrategyRuleDao {
 
     List<StrategyRule> queryStrategyRuleList();
+
+    /**
+     * 查询抽奖策略规则
+     * @param strategyRule
+     * @return
+     */
+    StrategyRule queryStrategyRule(@Param("strategyRule") StrategyRule strategyRule);
 }
