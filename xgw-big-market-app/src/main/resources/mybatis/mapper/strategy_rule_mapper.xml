@@ -26,4 +26,14 @@
           and rule_model = #{strategyRule.ruleModel}
     </select>
 
+    <select id="queryStrategyRuleRuleValue" resultType="java.lang.String">
+        select rule_value
+        from strategy_rule
+        where strategy_id = #{strategyRule.strategyId}
+          and rule_model = #{strategyRule.ruleModel}
+            <if test="strategyRule.awardId != null">
+                and award_id = #{strategyRule.awardId}
+            </if>
+    </select>
+
 </mapper>

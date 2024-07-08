@@ -23,8 +23,17 @@ public interface IStrategyRuleDao {
 
     /**
      * 查询抽奖策略规则
+     *
      * @param strategyRule
      * @return
      */
     StrategyRule queryStrategyRule(@Param("strategyRule") StrategyRule strategyRule);
+
+    /**
+     * 查询抽奖策略规则中的抽奖规则比值
+     *
+     * @param strategyRule 抽奖策略ID
+     * @return
+     */
+    String queryStrategyRuleRuleValue(@Param("strategyRule") StrategyRule strategyRule);
 }

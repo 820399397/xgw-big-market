@@ -102,4 +102,13 @@ public interface IStrategyRepository {
      * @return
      */
     StrategyRuleEntity queryStrategyRule(Long strategyId, String ruleModel);
+
+    /**
+     * 查询抽奖策略规则中的抽奖规则比值
+     * @param strategyId    抽奖策略ID
+     * @param awardId       奖品ID
+     * @param ruleModel     抽奖规则类型 抽奖规则类型【rule_random - 随机值计算、rule_lock - 抽奖几次后解锁、rule_luck_award - 幸运奖(兜底奖品) 、rule_weight - 权重抽奖、rule_blacklist - 黑名单】
+     * @return
+     */
+    String queryStrategyRuleRuleValue(Long strategyId, Long awardId, String ruleModel);
 }
