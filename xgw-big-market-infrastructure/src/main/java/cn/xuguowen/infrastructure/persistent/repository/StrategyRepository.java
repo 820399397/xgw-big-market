@@ -3,6 +3,7 @@ package cn.xuguowen.infrastructure.persistent.repository;
 import cn.xuguowen.domain.strategy.model.entity.StrategyAwardEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
+import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardRuleModelVO;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
 import cn.xuguowen.infrastructure.persistent.dao.IStrategyAwardDao;
 import cn.xuguowen.infrastructure.persistent.dao.IStrategyDao;
@@ -218,9 +219,10 @@ public class StrategyRepository implements IStrategyRepository {
 
     /**
      * 查询抽奖策略规则中的抽奖规则比值
-     * @param strategyId    抽奖策略ID
-     * @param awardId       奖品ID
-     * @param ruleModel     抽奖规则类型 抽奖规则类型【rule_random - 随机值计算、rule_lock - 抽奖几次后解锁、rule_luck_award - 幸运奖(兜底奖品) 、rule_weight - 权重抽奖、rule_blacklist - 黑名单】
+     *
+     * @param strategyId 抽奖策略ID
+     * @param awardId    奖品ID
+     * @param ruleModel  抽奖规则类型 抽奖规则类型【rule_random - 随机值计算、rule_lock - 抽奖几次后解锁、rule_luck_award - 幸运奖(兜底奖品) 、rule_weight - 权重抽奖、rule_blacklist - 黑名单】
      * @return
      */
     @Override
@@ -230,5 +232,14 @@ public class StrategyRepository implements IStrategyRepository {
         strategyRule.setAwardId(awardId);
         strategyRule.setRuleModel(ruleModel);
         return strategyRuleDao.queryStrategyRuleRuleValue(strategyRule);
+    }
+
+    @Override
+    public StrategyAwardRuleModelVO queryStrategyAwardRuleModelVO(Long strategyId, Long awardId) {
+        StrategyAward strategyAward = new StrategyAward();
+        strategyAward.setStrategyId(strategyId);
+        strategyAward.setAwardId(awardId);
+        String ruleModels = strategyAwardDao.queryStrategyAwardRuleModels(strategyAward);
+        return StrategyAwardRuleModelVO.builder().ruleModels(ruleModels).build();
     }
 }
