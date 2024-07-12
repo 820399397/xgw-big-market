@@ -1,8 +1,8 @@
-package cn.xuguowen.domain.strategy.service.rule.factory;
+package cn.xuguowen.domain.strategy.service.rule.filter.factory;
 
 import cn.xuguowen.domain.strategy.annotation.LogicStrategy;
 import cn.xuguowen.domain.strategy.model.entity.RuleActionEntity;
-import cn.xuguowen.domain.strategy.service.rule.ILogicFilter;
+import cn.xuguowen.domain.strategy.service.rule.filter.ILogicFilter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ClassName: DefaultLogicFactory
- * Package: cn.xuguowen.domain.strategy.service.rule.factory
+ * Package: cn.xuguowen.domain.strategy.service.rule.filter.factory
  * Description:规则工厂
  *
  * @Author 徐国文

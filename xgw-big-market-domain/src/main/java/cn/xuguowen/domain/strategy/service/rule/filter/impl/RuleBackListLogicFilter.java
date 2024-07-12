@@ -1,12 +1,12 @@
-package cn.xuguowen.domain.strategy.service.rule.impl;
+package cn.xuguowen.domain.strategy.service.rule.filter.impl;
 
 import cn.xuguowen.domain.strategy.annotation.LogicStrategy;
 import cn.xuguowen.domain.strategy.model.entity.RuleActionEntity;
 import cn.xuguowen.domain.strategy.model.entity.RuleMatterEntity;
 import cn.xuguowen.domain.strategy.model.valobj.RuleLogicCheckTypeVO;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
-import cn.xuguowen.domain.strategy.service.rule.ILogicFilter;
-import cn.xuguowen.domain.strategy.service.rule.factory.DefaultLogicFactory;
+import cn.xuguowen.domain.strategy.service.rule.filter.ILogicFilter;
+import cn.xuguowen.domain.strategy.service.rule.filter.factory.DefaultLogicFactory;
 import cn.xuguowen.types.common.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 
 /**
  * ClassName: RuleBackListLogicFilter
- * Package: cn.xuguowen.domain.strategy.service.rule.impl
+ * Package: cn.xuguowen.domain.strategy.service.rule.filter.impl
  * Description:【抽奖前规则】黑名单用户过滤规则
  *
  * @Author 徐国文

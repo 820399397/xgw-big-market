@@ -1,10 +1,9 @@
 package cn.xuguowen.domain.strategy.model.valobj;
 
-import cn.xuguowen.domain.strategy.service.rule.factory.DefaultLogicFactory;
+import cn.xuguowen.domain.strategy.service.rule.filter.factory.DefaultLogicFactory;
 import cn.xuguowen.types.common.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

@@ -1,4 +1,4 @@
-package cn.xuguowen.domain.strategy.service.rule;
+package cn.xuguowen.domain.strategy.service.rule.filter;
 
 import cn.xuguowen.domain.strategy.model.entity.RuleActionEntity;
 import cn.xuguowen.domain.strategy.model.entity.RuleMatterEntity;

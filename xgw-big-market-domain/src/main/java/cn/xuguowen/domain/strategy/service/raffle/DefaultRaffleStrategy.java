@@ -5,9 +5,11 @@ import cn.xuguowen.domain.strategy.model.entity.RuleActionEntity;
 import cn.xuguowen.domain.strategy.model.entity.RuleMatterEntity;
 import cn.xuguowen.domain.strategy.model.valobj.RuleLogicCheckTypeVO;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
+import cn.xuguowen.domain.strategy.service.AbstractRaffleStrategy;
 import cn.xuguowen.domain.strategy.service.armory.IStrategyDispatch;
-import cn.xuguowen.domain.strategy.service.rule.ILogicFilter;
-import cn.xuguowen.domain.strategy.service.rule.factory.DefaultLogicFactory;
+import cn.xuguowen.domain.strategy.service.rule.chain.factory.DefaultChainFactory;
+import cn.xuguowen.domain.strategy.service.rule.filter.ILogicFilter;
+import cn.xuguowen.domain.strategy.service.rule.filter.factory.DefaultLogicFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -29,13 +31,16 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class DefaultRaffleStrategy extends AbstractRaffleStrategy{
+public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
 
     @Resource
     private DefaultLogicFactory logicFactory;
 
-    public DefaultRaffleStrategy(IStrategyRepository strategyRepository, IStrategyDispatch strategyDispatch) {
-        super(strategyRepository, strategyDispatch);
+    @Resource
+    private DefaultChainFactory defaultChainFactory;
+
+    public DefaultRaffleStrategy(IStrategyRepository strategyRepository, IStrategyDispatch strategyDispatch,DefaultChainFactory defaultChainFactory) {
+        super(strategyRepository, strategyDispatch,defaultChainFactory);
     }
 
     @Override

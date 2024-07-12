@@ -114,4 +114,6 @@ public interface IStrategyRepository {
     String queryStrategyRuleRuleValue(Long strategyId, Long awardId, String ruleModel);
 
     StrategyAwardRuleModelVO queryStrategyAwardRuleModelVO(Long strategyId, Long awardId);
+
+    String queryStrategyRuleValue(Long strategyId, String ruleModel);
 }

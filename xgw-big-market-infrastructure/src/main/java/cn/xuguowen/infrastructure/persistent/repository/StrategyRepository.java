@@ -242,4 +242,9 @@ public class StrategyRepository implements IStrategyRepository {
         String ruleModels = strategyAwardDao.queryStrategyAwardRuleModels(strategyAward);
         return StrategyAwardRuleModelVO.builder().ruleModels(ruleModels).build();
     }
+
+    @Override
+    public String queryStrategyRuleValue(Long strategyId, String ruleModel) {
+        return this.queryStrategyRuleRuleValue(strategyId, null, ruleModel);
+    }
 }
