@@ -2,6 +2,7 @@ package cn.xuguowen.domain.strategy.service.rule.chain.impl;
 
 import cn.xuguowen.domain.strategy.service.armory.IStrategyDispatch;
 import cn.xuguowen.domain.strategy.service.rule.chain.AbstractLogicChain;
+import cn.xuguowen.domain.strategy.service.rule.chain.factory.DefaultChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ import javax.annotation.Resource;
  * @Version 1.0
  */
 @Slf4j
-@Component("default")
+@Component("rule_default")
 public class DefaultLogicChain extends AbstractLogicChain {
 
     @Resource
@@ -31,15 +32,15 @@ public class DefaultLogicChain extends AbstractLogicChain {
      * @return 奖品ID
      */
     @Override
-    public Long logic(String userId, Long strategyId) {
+    public DefaultChainFactory.StrategyAwardVO logic(String userId, Long strategyId) {
         Long awardId = strategyDispatch.getRandomArard(strategyId);
         log.info("抽奖责任链-默认处理 userId: {} strategyId: {} ruleModel: {} awardId: {}", userId, strategyId, ruleModel(), awardId);
-        return awardId;
+        return DefaultChainFactory.StrategyAwardVO.builder().awardId(awardId).logicModel(ruleModel()).build();
     }
 
 
     @Override
     protected String ruleModel() {
-        return "default";
+        return DefaultChainFactory.LogicModel.RULE_DEFAULT.getCode();
     }
 }

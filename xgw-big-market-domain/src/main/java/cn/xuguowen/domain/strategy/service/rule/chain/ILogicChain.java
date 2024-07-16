@@ -1,5 +1,7 @@
 package cn.xuguowen.domain.strategy.service.rule.chain;
 
+import cn.xuguowen.domain.strategy.service.rule.chain.factory.DefaultChainFactory;
+
 /**
  * ClassName: ILogicChain
  * Package: cn.xuguowen.domain.strategy.service.rule.chain
@@ -18,7 +20,7 @@ public interface ILogicChain extends ILogicChainArmory{
      * @param strategyId 策略ID
      * @return 奖品ID
      */
-    Long logic(String userId, Long strategyId);
+    DefaultChainFactory.StrategyAwardVO logic(String userId, Long strategyId);
 
 
 }

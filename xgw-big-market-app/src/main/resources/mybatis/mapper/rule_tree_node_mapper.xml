@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xuguowen.infrastructure.persistent.dao.IRuleTreeNodeDao">
+
+    <resultMap id="dataMap" type="cn.xuguowen.infrastructure.persistent.po.RuleTreeNode">
+        <id column="id" property="id"/>
+        <result property="treeId" column="tree_id"/>
+        <result property="ruleKey" column="rule_key"/>
+        <result property="ruleDesc" column="rule_desc"/>
+        <result property="ruleValue" column="rule_value"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="queryRuleTreeNodeByTreeId" resultMap="dataMap">
+        select id,tree_id,rule_key,rule_desc,rule_value
+        from rule_tree_node
+        where tree_id = #{treeId}
+    </select>
+
+
+</mapper>

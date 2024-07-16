@@ -14,6 +14,8 @@ public class Constants {
         public static String STRATEGY_TOTAL_AWARD_KEY = "big_market_strategy_total_award_key_";
 
         public static String STRATEGY_KEY = "big_market_strategy_key_";
+
+        public static String RULE_TREE_VO_KEY = "rule_tree_vo_key_";
     }
 
 }

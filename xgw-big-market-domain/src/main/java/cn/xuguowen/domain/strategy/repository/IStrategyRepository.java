@@ -3,6 +3,7 @@ package cn.xuguowen.domain.strategy.repository;
 import cn.xuguowen.domain.strategy.model.entity.StrategyAwardEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
+import cn.xuguowen.domain.strategy.model.valobj.RuleTreeVO;
 import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardRuleModelVO;
 
 import java.math.BigDecimal;
@@ -116,4 +117,11 @@ public interface IStrategyRepository {
     StrategyAwardRuleModelVO queryStrategyAwardRuleModelVO(Long strategyId, Long awardId);
 
     String queryStrategyRuleValue(Long strategyId, String ruleModel);
+
+    /**
+     * 根据规则树ID查询规则信息：包含规则节点信息和规则节点连线信息
+     * @param treeId    规则树ID
+     * @return
+     */
+    RuleTreeVO queryRuleTreeVOByTreeId(String treeId);
 }

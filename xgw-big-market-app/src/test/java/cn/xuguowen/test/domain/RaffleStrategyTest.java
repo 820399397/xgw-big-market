@@ -4,8 +4,6 @@ import cn.xuguowen.domain.strategy.model.entity.RaffleAwardEntity;
 import cn.xuguowen.domain.strategy.model.entity.RaffleFactorEntity;
 import cn.xuguowen.domain.strategy.service.IRaffleStrategy;
 import cn.xuguowen.domain.strategy.service.armory.IStrategyArmory;
-import cn.xuguowen.domain.strategy.service.rule.filter.impl.RuleLockLogicFilter;
-import cn.xuguowen.domain.strategy.service.rule.filter.impl.RuleWeightLogicFilter;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -13,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.annotation.Resource;
 
@@ -37,22 +34,11 @@ public class RaffleStrategyTest {
     @Resource
     private IStrategyArmory strategyArmory;
 
-    @Resource
-    private RuleWeightLogicFilter ruleWeightLogicFilter;
-
-    @Resource
-    private RuleLockLogicFilter ruleLockLogicFilter;
 
     @Before
     public void setUp() {
-        Boolean flag = strategyArmory.assembleLotteryStrategy(100003L);
+        Boolean flag = strategyArmory.assembleLotteryStrategy(100006L);
         log.info("装配结果-{}", flag);
-
-        // 通过反射的方式设置RuleWeightLogicFilter类中的userScore属性的值
-        ReflectionTestUtils.setField(ruleWeightLogicFilter, "userScore", 4050L);
-
-        // 通过反射的方式设置RuleLockLogicFilter类中的userRaffleCount属性的值
-        ReflectionTestUtils.setField(ruleLockLogicFilter, "userRaffleCount", 0L);
     }
 
     /**
@@ -74,7 +60,7 @@ public class RaffleStrategyTest {
     public void test_performRaffle() {
         RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
                 .userId("xgw")
-                .strategyId(100001L)
+                .strategyId(100006L)
                 .build();
 
         RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(raffleFactorEntity);

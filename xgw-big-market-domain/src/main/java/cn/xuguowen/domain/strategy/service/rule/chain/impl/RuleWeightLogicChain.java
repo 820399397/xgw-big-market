@@ -1,18 +1,20 @@
 package cn.xuguowen.domain.strategy.service.rule.chain.impl;
 
-import cn.xuguowen.domain.strategy.model.entity.RuleActionEntity;
-import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
-import cn.xuguowen.domain.strategy.model.valobj.RuleLogicCheckTypeVO;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
 import cn.xuguowen.domain.strategy.service.armory.IStrategyDispatch;
 import cn.xuguowen.domain.strategy.service.rule.chain.AbstractLogicChain;
+import cn.xuguowen.domain.strategy.service.rule.chain.factory.DefaultChainFactory;
 import cn.xuguowen.types.common.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * ClassName: RuleWeightLogicChain
@@ -44,7 +46,7 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
      * @return 奖品ID
      */
     @Override
-    public Long logic(String userId, Long strategyId) {
+    public DefaultChainFactory.StrategyAwardVO logic(String userId, Long strategyId) {
         log.info("抽奖责任链-权重开始 userId: {} strategyId: {} ruleModel: {}", userId, strategyId, ruleModel());
 
         // 1.查询strategy_rule表中rule_model=rule_weight的rule_value
@@ -86,7 +88,7 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
         if (null != nextValue) {
             Long awardId = strategyDispatch.getRandomArard(strategyId, analyticalValueGroup.get(nextValue));
             log.info("抽奖责任链-权重接管 userId: {} strategyId: {} ruleModel: {} awardId: {}", userId, strategyId, ruleModel(), awardId);
-            return awardId;
+            return DefaultChainFactory.StrategyAwardVO.builder().awardId(awardId).logicModel(ruleModel()).build();
         }
 
         // 6. 过滤其他责任链
@@ -97,7 +99,7 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
 
     @Override
     protected String ruleModel() {
-        return "rule_weight";
+        return DefaultChainFactory.LogicModel.RULE_WEIGHT.getCode();
     }
 
     private Map<Long, String> getAnalyticalValue(String ruleValue) {
