@@ -260,4 +260,18 @@ public interface IRedisService {
      * @return 返回结果
      */
     <T> RBloomFilter<T> getBloomFilter(String key);
+
+    /**
+     * 设置原子数量
+     * @param key      键
+     * @param value     值
+     */
+    void setAtomicLong(String key, Integer value);
+
+    /**
+     * sexNx原子性加锁
+     * @param key
+     * @return
+     */
+    Boolean setNx(String key);
 }

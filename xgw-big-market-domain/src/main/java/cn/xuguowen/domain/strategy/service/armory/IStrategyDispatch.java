@@ -37,4 +37,11 @@ public interface IStrategyDispatch {
      */
     Long getRandomAwardAlternative(Long strategyId);
 
+    /**
+     * 从redis中扣减奖品库存
+     * @param strategyId    策略ID
+     * @param awardId       奖品ID
+     * @return
+     */
+    Boolean subtractionAwardStock(Long strategyId, Long awardId);
 }

@@ -2,6 +2,7 @@ package cn.xuguowen.domain.strategy.service.raffle;
 
 import cn.xuguowen.domain.strategy.model.valobj.RuleTreeVO;
 import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardRuleModelVO;
+import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardStockKeyVO;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
 import cn.xuguowen.domain.strategy.service.AbstractRaffleStrategy;
 import cn.xuguowen.domain.strategy.service.armory.IStrategyDispatch;
@@ -48,5 +49,15 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
 
         IDecisionTreeEngine decisionTreeEngine = defaultTreeFactory.openLogicTree(ruleTreeVO);
         return decisionTreeEngine.process(userId, strategyId, awardId);
+    }
+
+    @Override
+    public StrategyAwardStockKeyVO takeQueueValue() throws InterruptedException {
+        return strategyRepository.takeQueueValue();
+    }
+
+    @Override
+    public void updateStrategyAwardStock(Long strategyId, Long awardId) {
+        strategyRepository.updateStrategyAwardStock(strategyId, awardId);
     }
 }

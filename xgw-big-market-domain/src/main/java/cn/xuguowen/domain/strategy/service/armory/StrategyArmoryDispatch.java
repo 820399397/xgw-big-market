@@ -4,6 +4,7 @@ import cn.xuguowen.domain.strategy.model.entity.StrategyAwardEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
 import cn.xuguowen.domain.strategy.repository.IStrategyRepository;
+import cn.xuguowen.types.common.Constants;
 import cn.xuguowen.types.enums.ResponseCode;
 import cn.xuguowen.types.exception.AppException;
 import com.alibaba.fastjson2.JSON;
@@ -12,10 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -49,34 +52,53 @@ public class StrategyArmoryDispatch implements IStrategyArmory, IStrategyDispatc
             return Boolean.TRUE;
         }
 
-        // 2.装配抽奖奖品策略 - 装配查找表
-        this.assembleLotteryStrategy(String.valueOf(strategyId),strategyAwardEntityList);
+        // 2.缓存每个奖品的库存值
+        for (StrategyAwardEntity strategyAwardEntity : strategyAwardEntityList) {
+            Long awardId = strategyAwardEntity.getAwardId();
+            Integer awardCount = strategyAwardEntity.getAwardCount();
+            this.cacheStrategyAwardCount(strategyId, awardId, awardCount);
+        }
 
-        // 3.权重策略配置 - 试用于 rule_weight 权重规则配置
+        // 3.1 装配抽奖奖品策略 - 装配查找表 [全量装配]
+        this.assembleLotteryStrategy(String.valueOf(strategyId), strategyAwardEntityList);
+
+        // 3.2权重策略配置 - 试用于 rule_weight 权重规则配置
         StrategyEntity strategyEntity = strategyRepository.queryStrategyEntityByStrategyId(strategyId);
-        log.info("策略装配库-装配抽奖策略-查询到抽奖策略信息:{}",strategyEntity);
+        log.info("策略装配库-装配抽奖策略-查询到抽奖策略信息:{}", strategyEntity);
         String ruleWeight = strategyEntity.getRuleWeight();
-        log.info("策略装配库-装配抽奖策略-查询到权重规则配置:{}",ruleWeight);
+        log.info("策略装配库-装配抽奖策略-查询到权重规则配置:{}", ruleWeight);
         if (Objects.isNull(ruleWeight)) return Boolean.TRUE;
 
-        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRule(strategyId,ruleWeight);
-        log.info("策略装配库-装配抽奖策略-查询到抽奖策略规则配置:{}",strategyRuleEntity);
+        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRule(strategyId, ruleWeight);
+        log.info("策略装配库-装配抽奖策略-查询到抽奖策略规则配置:{}", strategyRuleEntity);
         if (Objects.isNull(strategyRuleEntity)) {
-            throw new AppException(ResponseCode.STRATEGY_RULE_WEIGHT_IS_NULL.getCode(),ResponseCode.STRATEGY_RULE_WEIGHT_IS_NULL.getInfo());
+            throw new AppException(ResponseCode.STRATEGY_RULE_WEIGHT_IS_NULL.getCode(), ResponseCode.STRATEGY_RULE_WEIGHT_IS_NULL.getInfo());
         }
 
         Map<String, List<Long>> ruleWeightValueMap = strategyRuleEntity.getRuleWeightValues();
-        log.info("策略装配库-装配抽奖策略-权重规则Map:{}",ruleWeightValueMap);
+        log.info("策略装配库-装配抽奖策略-权重规则Map:{}", ruleWeightValueMap);
         Set<String> keys = ruleWeightValueMap.keySet();
         for (String key : keys) {
             List<Long> ruleWeightValues = ruleWeightValueMap.get(key);
             ArrayList<StrategyAwardEntity> strategyAwardEntitiesClone = new ArrayList<>(strategyAwardEntityList);
             strategyAwardEntitiesClone.removeIf(entity -> !ruleWeightValues.contains(entity.getAwardId()));
-            log.info("策略装配库-装配抽奖策略-策略ID:{} 权重值:{} 匹配到奖品ID:{}",strategyId,key,strategyAwardEntitiesClone.stream().map(StrategyAwardEntity::getAwardId).collect(Collectors.toList()));
-            this.assembleLotteryStrategy(String.valueOf(strategyId).concat("_").concat(key),strategyAwardEntitiesClone);
+            log.info("策略装配库-装配抽奖策略-策略ID:{} 权重值:{} 匹配到奖品ID:{}", strategyId, key, strategyAwardEntitiesClone.stream().map(StrategyAwardEntity::getAwardId).collect(Collectors.toList()));
+            this.assembleLotteryStrategy(String.valueOf(strategyId).concat("_").concat(key), strategyAwardEntitiesClone);
         }
 
         return Boolean.TRUE;
+    }
+
+    /**
+     * 缓存奖品库存到Redis
+     *
+     * @param strategyId 策略ID
+     * @param awardId    奖品ID
+     * @param awardCount 奖品数量
+     */
+    private void cacheStrategyAwardCount(Long strategyId, Long awardId, Integer awardCount) {
+        String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_KEY + strategyId + Constants.UNDERLINE + awardId;
+        strategyRepository.cacheStrategyAwardCount(cacheKey, awardCount);
     }
 
     private void assembleLotteryStrategy(String key, List<StrategyAwardEntity> strategyAwardEntityList) {
@@ -136,7 +158,7 @@ public class StrategyArmoryDispatch implements IStrategyArmory, IStrategyDispatc
     @Override
     public Long getRandomArard(Long strategyId, String ruleWeightValue) {
         String key = String.valueOf(strategyId).concat("_").concat(ruleWeightValue);
-        log.info("抽奖策略规则装配key:{}",key);
+        log.info("抽奖策略规则装配key:{}", key);
         Integer rateRange = strategyRepository.getRateRange(key);
         log.info("rateRange:{}", rateRange);
         int random = new SecureRandom().nextInt(rateRange);
@@ -211,5 +233,18 @@ public class StrategyArmoryDispatch implements IStrategyArmory, IStrategyDispatc
             }
         }
         return null; // 如果没有匹配上，返回null
+    }
+
+    /**
+     * 从redis中扣减奖品库存
+     *
+     * @param strategyId 策略ID
+     * @param awardId    奖品ID
+     * @return
+     */
+    @Override
+    public Boolean subtractionAwardStock(Long strategyId, Long awardId) {
+        String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_KEY + strategyId + Constants.UNDERLINE + awardId;
+        return strategyRepository.subtractionAwardStock(cacheKey);
     }
 }

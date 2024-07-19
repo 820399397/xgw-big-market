@@ -5,6 +5,7 @@ import cn.xuguowen.domain.strategy.model.entity.StrategyEntity;
 import cn.xuguowen.domain.strategy.model.entity.StrategyRuleEntity;
 import cn.xuguowen.domain.strategy.model.valobj.RuleTreeVO;
 import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardRuleModelVO;
+import cn.xuguowen.domain.strategy.model.valobj.StrategyAwardStockKeyVO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -124,4 +125,38 @@ public interface IStrategyRepository {
      * @return
      */
     RuleTreeVO queryRuleTreeVOByTreeId(String treeId);
+
+    /**
+     * 缓存奖品库存到Redis
+     * @param cacheKey      缓存key
+     * @param awardCount    奖品数量
+     */
+    void cacheStrategyAwardCount(String cacheKey, Integer awardCount);
+
+    /**
+     * 从redis中扣减奖品的库存
+     * @param cacheKey  缓存key
+     * @return
+     */
+    Boolean subtractionAwardStock(String cacheKey);
+
+    /**
+     * 写入奖品库存消费队列
+     * @param strategyAwardStockKeyVO
+     */
+    void awardStockConsumeSendQueue(StrategyAwardStockKeyVO strategyAwardStockKeyVO);
+
+    /**
+     * 获取奖品库存消费队列
+     * @return
+     */
+    StrategyAwardStockKeyVO takeQueueValue();
+
+    /**
+     * 更新奖品库存消耗
+     *
+     * @param strategyId 策略ID
+     * @param awardId 奖品ID
+     */
+    void updateStrategyAwardStock(Long strategyId, Long awardId);
 }

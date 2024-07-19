@@ -28,4 +28,10 @@ public interface IStrategyAwardDao {
     List<StrategyAward> queryStrategyAwardListByStrategyId(@Param("strategyId") Long strategyId);
 
     String queryStrategyAwardRuleModels(StrategyAward strategyAward);
+
+    /**
+     * 更新奖品剩余数量
+     * @param strategyAward
+     */
+    void updateStrategyAwardStock(StrategyAward strategyAward);
 }
